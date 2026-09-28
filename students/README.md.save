@@ -26,12 +26,12 @@ Now, after the second lecture, your directory tree should look like:
 6. Stage all the README.md files using `git add` and commit the changes using `git commit`.
 7. Push the changes to GitHub using `git push`.
 8. In GitHub, open a pull request telling me you have reached this far.
-
+Stage all the README.md files using `git add` and commit the changes using 
 ## Students
 
 | Name | Directory |
 |--|--|
-| Martinez-Sebastia Pedro| msp |
+| Name Surname Surname| ssn |
 
 ---
 <p align="center">
