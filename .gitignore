@@ -18,6 +18,7 @@ conda-env/
 tree_openmp
 tree_mpi
 nbody_mpi
+students/gmcm/sandbox/l02/kepler
 *.exe
 *.out
 
