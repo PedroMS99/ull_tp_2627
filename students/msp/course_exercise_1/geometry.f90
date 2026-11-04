@@ -92,7 +92,12 @@ module geometry
          type(vector3d) , intent(in) :: a
          real(real64), intent(in) :: b
          divvr = vector3d(a%x / b, a%y / b, a%z / b)
-         end function divvr
+      end function divvr
+         
+    ! return the distance from point a to point b as a real number
+      pure real(real64) function distance(a,b)
+         type(point3d) , intent(in) :: a , b
+         distance = sqrt((a%x - b%x)**2.0_real64 + (a%y - b%y)**2.0_real64 + (a%z - b%z)**2.0_real64 )
+      end function distance
                      
 end module geometry
-
