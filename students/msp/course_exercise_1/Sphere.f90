@@ -12,15 +12,33 @@
 
 program sphere
 
+   !!!!!!!!!!!!!!!!!
+   ! LIBRARIES
+   !!!!!!!!!!!!!!!!!
+   
    use iso_fortran_env, only: real64
+   
    implicit none
+   
+   !!!!!!!!!!!!!!!!!
+   ! VARIABLES
+   !!!!!!!!!!!!!!!!!
 
    integer :: i, s, n, ident, unit
    integer, allocatable :: seed(:)
-   real(real64), allocatable :: x(:,:), r(:)
+   real(real64) :: time_step, snap_step, total_time
+   real(real64), allocatable :: x(:,:), r(:) 
 
    n = 1000
-
+   time_step = 0.001_real64
+   snap_step = 0.1_real64
+   total_time= 100.0_real64
+   
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   ! MAIN: GENERATING THE SPHERE
+   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+   
+   
    call random_seed(size=s)
    allocate(seed(s))
 
@@ -30,27 +48,42 @@ program sphere
    allocate(x(n,7))
    allocate(r(n))
 
-   x(:,7) = 1.0_real64 ! de momento la masa es toda la misma y vale 1
+   x(:,1) = 1.0_real64 ! de momento la masa es toda la misma y vale 1
 
-   call random_number(x(:,1:6))
-   x(:,1:6) = 2*x(:,1:6) - 1.0_real64
+   call random_number(x(:,2:7))
+   
+   ! Next line become rand (0,1) in rand(-1,1)
+   x(:,2:7) = 2*x(:,2:7) - 1.0_real64 
 
-   !cambio la semilla para los radios
+   ! changing seed for the radious.
    seed = 11
    call random_seed(put=seed)
 
    call random_number(r(:))
 
    do i = 1, n
-      x(i,1:3) = r(i) * x(i,1:3) / &
-      sqrt(x(i,1)**2 + x(i,2)**2 + x(i,3)**2)
+      x(i,2:4) = r(i) * x(i,2:4) / &
+      sqrt(x(i,2)**2 + x(i,3)**2 + x(i,4)**2)
    end do
 
-   open(newunit=unit, file="sphere.txt", status="replace", action="write")
-   write (unit , *) "ID	", "X	", "Y	", "Z	", "VX	", "VY	", "VZ	", "M	"
-   ! Segundo bucle sobre el número de partículas
+   !!!!!!!!!!!!!!!!!
+   ! SAVING THE DATA
+   !!!!!!!!!!!!!!!!!
+
+   open(newunit=unit, file="input.dat", status="replace", action="write")
+   
+   ! I will do the same format as in the example
+   write (unit , *) time_step
+   write (unit , *) snap_step
+   write (unit , *) total_time
+   write (unit , *) n
+   ! write (unit , *) "ID	", "X	", "Y	", "Z	", "VX	", "VY	", "VZ	", "M	"
+   
+   ! Loop over particles
    do ident = 1, n
-      write (unit , *) ident, x(ident,:) ! guardo resultados
+   
+      write (unit , *) x(ident,:) ! guardo resultados
+   
    end do
 
    close(unit)

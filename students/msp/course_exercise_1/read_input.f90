@@ -6,54 +6,73 @@ module read_input
    
    implicit none
    
-contains
+   contains
    
-   function input(Name_txt) result(particles)
+      function input(Name_txt, N, time_step, snap_step, total_time) result(particles)
 
-		character(len=*), intent(in) :: Name_txt
-		type(particle3d), allocatable :: particles(:)
-		integer :: i, ios, ios_end, N, ident
+      character(len=*), intent(in) :: Name_txt
+      type(particle3d), allocatable :: particles(:)
+      integer :: i, ios
+      real(real64), intent(out) :: time_step, snap_step, total_time
+      integer, intent(out) :: N
 
-		! Read the set up: for the moment particles position, velocity an mass
-		open(unit=1, file=Name_txt, status="old", action="read")
+      ! Read the set up: for the moment particles position, velocity an mass
+      open(unit=1, file=Name_txt, status="old", action="read")
 
-		read(1, *) ! Skip Header
+      ! read(1, *) ! Skip Header
 
-		! Read number of particles
-		N = 0 
+      ! Read number of particles
+      N = - 4 ! Exclude 4 first lines.
 
-		do
-			read(1, *, iostat=ios)
-			if (ios == iostat_end) exit
-			N = N + 1
-		end do
+      do
+         read(1, *, iostat=ios)
+         if (ios == iostat_end) exit
+         N = N + 1
+      end do
 
-		! Allocate acceleration and particles:
-		allocate(particles(N))
+      ! Allocate acceleration and particles:
+      allocate(particles(N))
 
-		rewind(1) ! Return to beginning of file
+      rewind(1) ! Return to beginning of file
 
 
-		read(1, *)    ! Skip header
+      read(1, *)    ! Skip header
 
-		! Loop to read particles from the file
-		do i = 1, N
+      ! Loop to read particles from the file
+      do i = 1, N + 4
 
-		   read(1, *) ident, &
-					   particles(i)%p%x, &
-					   particles(i)%p%y, &
-					   particles(i)%p%z, &
-					   particles(i)%v%x, &
-					   particles(i)%v%y, &
-					   particles(i)%v%z, &
-					   particles(i)%m
+         if (i == 4) cycle
 
-		end do
-		close(1) ! close the file, dont nedded forward
+         if (i == 1) then
 
+            read(1, *) time_step
+
+         else if (i == 2) then
+
+            read(1, *) snap_step
+
+         else if (i == 3) then
+
+            read(1, *) total_time
+
+         else if (i > 4) then 
+
+            read(1, *) particles(i-4)%m, &
+                       particles(i-4)%p%x, &
+                       particles(i-4)%p%y, &
+                       particles(i-4)%p%z, &
+                       particles(i-4)%v%x, &
+                       particles(i-4)%v%y, &
+                       particles(i-4)%v%z
+		   
+         end if
+
+      end do
+
+      close(1) ! close the file
 
    end function input
-   
+
 end module read_input
 
 

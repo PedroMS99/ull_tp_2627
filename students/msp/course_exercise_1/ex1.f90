@@ -23,23 +23,30 @@ program ex1
 
    integer :: N, ident,n_steps, step, unit ! Loops integer and ios
    type(vector3d), allocatable :: a(:)   ! accelerations
-   real(real64) :: dt ! time step
+   real(real64) :: dt, snap_step, total_time, sim_time ! time step
    type(particle3d), allocatable :: particles(:) ! allocatable particles
    character(len=100) :: name_IC ! IC file name
    
    !!!!!!!!!!!!!!!!
-   ! SET UP: SHOULD THIS BE IN A FILE APART?
+   ! READING SETUP
    !!!!!!!!!!!!!!!!
    
-   dt = 0.01_real64 
-   n_steps = 5
-   name_IC = "sphere.txt" ! Sphere.txt created ussing Sphere.f90
-   particles = input(name_IC) ! FUNCTION IN MODULE INSIDE read_input.f90
+   if (command_argument_count() /= 1) then
+      print "(a)", "Usage: ./args <input file>"
+      stop 1
+   end if
+   
+   call get_command_argument(1, name_IC)
+   
+   
+   particles = input(name_IC, N, dt, snap_step,total_time) ! FUNCTION IN MODULE INSIDE read_input.f90
+   sim_time = 0.0_real64
    ! Particles are an array of particle3d type, defined in module particle.f90
    ! this is allocated in input function which read the file.
-   
+
+   n_steps = INT( total_time / dt ) ! become the real into an integer
+
    ! Allocate acceleration
-   N = size(particles)
    allocate(a(N))
    
    !!!!!!!!!!!!!!!!!!!!
@@ -58,8 +65,9 @@ program ex1
    ! Opening the file in which data is saved: If it doesn't exist it is generated!
    open(newunit=unit, file="results.txt", status="replace", action="write")
    
+   ! write (unit , *) 0.0_real64, particles(1:N)%p ! save state at t = 0
    ! 2- Main loops
-   
+
    ! First loop, over time
    do step = 1, n_steps
    
@@ -74,8 +82,10 @@ program ex1
       end do
       
       ! save actual simulation time and positions in one line inside results.txt
-      write (unit , *) dt* step, particles(1:N)%p ! guardo resultados
-   
+      if (dt * step > sim_time) then
+         write (unit , *) dt* step, particles(1:N)%p ! guardo resultados
+         sim_time = sim_time + snap_step
+      end if
    end do
    
    close(unit) ! close file
