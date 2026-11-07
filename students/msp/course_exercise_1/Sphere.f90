@@ -29,10 +29,10 @@ program sphere
    real(real64) :: time_step, snap_step, total_time
    real(real64), allocatable :: x(:,:), r(:) 
 
-   n = 1000
+   n = 10000
    time_step = 0.001_real64
-   snap_step = 0.1_real64
-   total_time= 100.0_real64
+   snap_step = 0.01_real64
+   total_time= 0.1_real64
    
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    ! MAIN: GENERATING THE SPHERE

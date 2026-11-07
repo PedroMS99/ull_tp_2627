@@ -35,9 +35,6 @@ module read_input
 
       rewind(1) ! Return to beginning of file
 
-
-      read(1, *)    ! Skip header
-
       ! Loop to read particles from the file
       do i = 1, N + 4
 

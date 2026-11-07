@@ -9,7 +9,8 @@ program ex1
    !!!!!!!!!!!!!!!!
    ! LIBRARIES
    !!!!!!!!!!!!!!!!
-   use iso_fortran_env, only: real64, iostat_end
+   !$ use omp_lib
+   use iso_fortran_env, only: int64, real64, iostat_end
    use geometry
    use particle
    use gravitational_acceleration
@@ -23,10 +24,13 @@ program ex1
 
    integer :: N, ident,n_steps, step, unit ! Loops integer and ios
    type(vector3d), allocatable :: a(:)   ! accelerations
-   real(real64) :: dt, snap_step, total_time, sim_time ! time step
+   real(real64) :: dt, snap_step, total_time, sim_time, total_simulated ! time step
    type(particle3d), allocatable :: particles(:) ! allocatable particles
    character(len=100) :: name_IC ! IC file name
    
+   integer(int64) :: t_start, t_end, rate
+
+   call system_clock(t_start, rate) ! lets start
    !!!!!!!!!!!!!!!!
    ! READING SETUP
    !!!!!!!!!!!!!!!!
@@ -44,8 +48,8 @@ program ex1
    ! Particles are an array of particle3d type, defined in module particle.f90
    ! this is allocated in input function which read the file.
 
-   n_steps = INT( total_time / dt ) ! become the real into an integer
-
+   n_steps = int( total_time / dt ) ! become the real into an integer
+   ! print *, particles(:)%p
    ! Allocate acceleration
    allocate(a(N))
    
@@ -72,7 +76,8 @@ program ex1
    do step = 1, n_steps
    
       ! Second loop, over particles.
-      do ident = 1, N
+      !$omp parallel do
+      do ident = 1, N       ! Parallelitation have to be done in the particles loops, not in time!
       
          particles(ident)%v = particles(ident)%v + a(ident) * dt / 2.0_real64
          particles(ident)%p = particles(ident)%p + particles(ident)%v * dt
@@ -80,15 +85,22 @@ program ex1
          particles(ident)%v = particles(ident)%v + a(ident) * dt / 2.0_real64
          
       end do
+      !$omp end parallel do
+
+      ! end of parallel zone
       
       ! save actual simulation time and positions in one line inside results.txt
+      
       if (dt * step > sim_time) then
-         write (unit , *) dt* step, particles(1:N)%p ! guardo resultados
-         sim_time = sim_time + snap_step
+         write (unit , *) dt* step, particles(1:N)%p ! Save results
+         sim_time = sim_time + snap_step ! actualize time
       end if
    end do
    
-   close(unit) ! close file
-
+   close(unit) ! close save file
+   
+   call system_clock(t_end)
+   total_simulated = real(t_end - t_start, real64) / real(rate, real64)
+   print *, "Time spend: ", total_simulated, "seconds "
 end program ex1
 
